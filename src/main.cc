@@ -25,19 +25,21 @@ int main(int argc, char *argv[])
         {
         build:
             boost::process::ipstream ss;
-            boost::process::child c(boost::process::search_path("cmake"), "--preset=windows", "-Bbuild/debug", boost::process::std_out > ss);
-            while (c.running())
+            std::stringstream stream;
+            boost::process::child c(boost::process::search_path("cmake"), "--preset=windows", "-Bbuild/debug", boost::process::std_out > ss, boost::process::std_err > ss);
+            std::string line{};
+            while (c.running() && std::getline(ss, line))
             {
                 log(std::format("Generating Config...{}", lc[rand() % strlen(lc)]), '\r');
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                stream << line << "\n";
             }
+            c.wait();
             if (c.exit_code() != 0)
             {
-                std::ofstream out{"build_log.txt"};
-                if (out.is_open())
-                    out << ss.rdbuf();
+                std::ofstream out{"build/cmake-log.txt"};
+                out << stream.rdbuf();
                 out.close();
-                log(std::format("Generating Config failed read build_log.txt for info"));
+                log(std::format("Generating Config failed read cmake-log.txt for more info"));
                 return 1;
             }
             goto compile;
@@ -48,18 +50,21 @@ int main(int argc, char *argv[])
 
             boost::process::ipstream ss;
             boost::process::child c(boost::process::search_path("cmake"), "--build", "build/debug", boost::process::std_out > ss);
-            while (c.running())
+            std::string line{};
+            std::stringstream stream;
+            while (c.running() && std::getline(ss, line))
             {
                 log(std::format("Compiling Project...{}", lc[rand() % strlen(lc)]), '\r');
+                stream << line << "\n";
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
+            c.wait();
             if (c.exit_code() != 0)
             {
-                std::ofstream out{"build_log.txt"};
-                if (out.is_open())
-                    out << ss.rdbuf();
+                std::ofstream out{"build/compile-log.txt"};
+                out<<stream.rdbuf();
                 out.close();
-                log("build failed read build_log.txt for more info");
+                log("build failed read build/compile-log.txt for more info");
                 return 1;
             }
             else
