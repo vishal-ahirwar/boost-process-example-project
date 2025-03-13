@@ -1,0 +1,6 @@
+namespace Project{
+constexpr const char*const VERSION_STRING="@boost-process-example-project_VERSION_MAJOR@.@boost-process-example-project_VERSION_MINOR@.@boost-process-example-project_VERSION_PATCH@";
+constexpr const char*const COMPANY_NAME ="@COMPANY@";
+constexpr const char*const COPYRIGHT_STRING= "@COPYRIGHT@";
+constexpr const char*const PROJECT_NAME="@PROJECT_NAME@";
+}
